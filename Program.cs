@@ -5,16 +5,19 @@ using MySql.Data.MySqlClient;
 using Dapper;
 using System.Linq;
 
-class Book
+class Media
 {
-    public string? BTitel { get; set; }
-    public string? Creator { get; set; }
+    public string? Titel { get; set; }
+    public string? Creators { get; set; }
     public string? Genre { get; set;}
+    public string? Publisher { get; set;}
+    public string? Year { get; set;}
+    public string? MediaType { get; set; }
 }
 
 class Program
 {
-    static List<Book> GetBooks()
+    static List<Media> GetMedias()
     {
         string connectionString = "server=localhost;database=bibliotek;uid=root;pwd=;";
 
@@ -22,27 +25,28 @@ class Program
         {
             connection.Open();
 
-            string query = "SELECT M.Title AS BTitel, CONCAT(C.FName, ' ', C.LName) AS Author, G.Name AS Genre " +
-                           "FROM creatorToMedia CM " +
-                           "INNER JOIN media M ON CM.MediaId = M.Id " +
-                           "INNER JOIN genre G ON M.genreId = G.id " +
-                           "INNER JOIN creators C ON CM.CreatorId = C.Id " +
-                           "WHERE M.id = 2";
+            string query = "SELECT M.Title AS Titel, CONCAT(C.FName, ' ', C.LName) AS Creators, G.Name AS Genre, MT.Name AS MediaType " +
+                            "FROM Media M " +
+                            "INNER JOIN CreatorToMedia CM ON M.Id = CM.MediaId " +
+                            "INNER JOIN Creators C ON CM.CreatorId = C.Id " +
+                            "INNER JOIN Genre G ON M.GenreId = G.Id " +
+                            "INNER JOIN mediatype MT ON M.TypeId = MT.Id " +
+                            "WHERE CONCAT (C.FName, ' ', C.LName) = 'Francis Ford Coppola'";
 
-            var books = connection.Query<Book>(query).ToList();
+            var media = connection.Query<Media>(query).ToList();
 
-           return books;
+           return media;
         }
     }
 
     static void Main(string[] args)
     {
-        var books = GetBooks();
+        var medias = GetMedias();
         
-        // Skriver ut informationen Title och författare
-        foreach (var book in books)
+        // Skriver ut informationen Title och författare, genre och mediatyp.
+        foreach (var media in medias)
         {
-            Console.WriteLine($"Title: {book.BTitel}, Creator: {book.Creator}, Genre: {book.Genre}");
+            Console.WriteLine($"Title: {media.Titel}, Creator: {media.Creators}, Genre: {media.Genre}, MediaType: {media.MediaType}");
         }
     }
 }
